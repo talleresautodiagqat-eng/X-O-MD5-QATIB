@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>XO MD5 QATIB — Prueba de sonido</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:#050814;color:#fff;font-family:Arial,sans-serif;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{width:min(520px,100%);background:#0c1324;border:1px solid #263858;border-radius:24px;padding:28px;box-shadow:0 15px 50px #000;text-align:center}
+h1{margin:0 0 8px;color:#00eaff}
+p{color:#aab6cc}
+button{width:100%;margin:7px 0;padding:15px;border:1px solid #304767;border-radius:13px;background:#121d33;color:#fff;font-size:16px;font-weight:bold;cursor:pointer}
+button:active{transform:scale(.98)}
+#status{margin:18px 0;padding:12px;border-radius:12px;background:#08101e;color:#00eaff}
+.small{font-size:12px;color:#71819a}
+</style>
+</head>
+<body>
+<div class="card">
+<h1>🔊 XO MD5 QATIB</h1>
+<p>Prueba los sonidos antes de instalar el APK.</p>
+<button onclick="startMusic()">🎵 Iniciar música de fondo</button>
+<button onclick="stopMusic()">🔇 Parar música</button>
+<button onclick="moveX()">❌ Probar sonido X</button>
+<button onclick="moveO()">⭕ Probar sonido O</button>
+<button onclick="win()">🏆 Probar sonido de victoria</button>
+<button onclick="draw()">🤝 Probar sonido de empate</button>
+<div id="status">Pulsa un botón para probar.</div>
+<p class="small">Los sonidos se generan en el navegador; no necesitas descargar archivos de audio.</p>
+</div>
+<script>
+let ctx=null,timer=null,step=0;
+const notes=[220,277.18,329.63,415.30,329.63,277.18,246.94,329.63];
+
+function audio(){
+  if(!ctx){
+    const C=window.AudioContext||window.webkitAudioContext;
+    if(!C){status("Este navegador no permite Web Audio.");return null}
+    ctx=new C();
+  }
+  if(ctx.state==="suspended") ctx.resume();
+  return ctx;
+}
+function status(t){document.getElementById("status").textContent=t}
+function tone(f,d,type="sine",v=.07,when){
+  const c=audio();if(!c)return;
+  const n=when??c.currentTime,o=c.createOscillator(),g=c.createGain();
+  o.type=type;o.frequency.setValueAtTime(f,n);
+  g.gain.setValueAtTime(.0001,n);
+  g.gain.exponentialRampToValueAtTime(v,n+.015);
+  g.gain.exponentialRampToValueAtTime(.0001,n+d);
+  o.connect(g);g.connect(c.destination);o.start(n);o.stop(n+d+.03);
+}
+function startMusic(){
+  const c=audio();if(!c)return;
+  if(timer)return;
+  step=0;
+  status("🎵 Música de fondo ACTIVADA");
+  function tick(){
+    tone(notes[step%notes.length],.65,"sine",.018);
+    tone(notes[step%notes.length]/2,.8,"triangle",.008,c.currentTime+.02);
+    step++;
+    timer=setTimeout(tick,620);
+  }
+  tick();
+}
+function stopMusic(){
+  clearTimeout(timer);timer=null;status("🔇 Música parada");
+}
+function moveX(){
+  const c=audio();if(!c)return;
+  tone(520,.11,"sine",.10);
+  tone(780,.10,"triangle",.055,c.currentTime+.055);
+  status("❌ Sonido de X");
+}
+function moveO(){
+  const c=audio();if(!c)return;
+  tone(300,.13,"triangle",.10);
+  tone(225,.11,"sine",.055,c.currentTime+.055);
+  status("⭕ Sonido de O");
+}
+function win(){
+  const c=audio();if(!c)return;
+  const a=[523.25,659.25,783.99,1046.50],s=c.currentTime;
+  a.forEach((f,i)=>tone(f,.28,i===3?"sine":"triangle",i===3?.13:.085,s+i*.13));
+  tone(a[0]/2,.65,"sine",.045,s);
+  tone(a[3]/2,.65,"sine",.045,s+.39);
+  status("🏆 ¡Sonido de victoria!");
+}
+function draw(){
+  const c=audio();if(!c)return;
+  tone(330,.22,"sine",.07);
+  tone(277.18,.30,"sine",.055,c.currentTime+.16);
+  status("🤝 Sonido de empate");
+}
+</script>
+</body>
+</html>
