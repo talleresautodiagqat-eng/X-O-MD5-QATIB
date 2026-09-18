@@ -786,6 +786,11 @@ button:active{
    CONTROLES
 ===================================================== */
 
+.sound-on{
+    border-color:rgba(0,234,255,.35);
+    box-shadow:0 0 18px rgba(0,234,255,.12);
+}
+
 .controls{
     display:flex;
     gap:10px;
@@ -1205,6 +1210,7 @@ footer{
     <!-- CONTROLES -->
 
     <div class="controls">
+    <button id="soundToggle" class="control-btn sound-on" type="button" onclick="toggleGameSound()">🔊 SONIDO: ACTIVADO</button>
 
         <button
             class="control-btn new-game"
@@ -1356,6 +1362,7 @@ footer{
 </div>
 
 
+<script src="sounds.js"></script>
 <script>
 
 /* =====================================================
@@ -1655,6 +1662,10 @@ function finishGame(result){
 
         drawWinLine(result.combo);
 
+        if(typeof playWinSound === "function"){
+            playWinSound(result.player);
+        }
+
         if(result.player === "X"){
 
             scoreX++;
@@ -1693,6 +1704,10 @@ function finishGame(result){
     }
 
     if(isDraw()){
+
+        if(typeof playDrawSound === "function"){
+            playDrawSound();
+        }
 
         message.innerHTML =
             "🤝 ¡EMPATE!<br>" +
@@ -1770,6 +1785,10 @@ function makeMove(index){
 
     board[index] =
         currentPlayer;
+
+    if(typeof playMoveSound === "function"){
+        playMoveSound(currentPlayer);
+    }
 
     renderBoard();
 
@@ -2305,6 +2324,9 @@ function robotMove(){
         board[index] =
             "O";
 
+        if(typeof playMoveSound === "function"){
+            playMoveSound("O");
+        }
 
         renderBoard();
 
