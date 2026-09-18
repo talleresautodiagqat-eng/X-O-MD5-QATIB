@@ -1115,10 +1115,105 @@ footer{
     }
 }
 
+
+/* =====================================================
+   PANTALLA DE INICIO + PANEL DE MÚSICA
+===================================================== */
+#splashScreen{
+    position:fixed;
+    inset:0;
+    z-index:1000;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    background:
+      radial-gradient(circle at 50% 40%,rgba(0,234,255,.12),transparent 38%),
+      #02040b;
+}
+.splash-card{
+    width:min(620px,100%);
+    padding:42px 28px;
+    text-align:center;
+    border:1px solid rgba(255,255,255,.14);
+    border-radius:30px;
+    background:rgba(5,11,25,.94);
+    box-shadow:0 25px 90px rgba(0,0,0,.75),0 0 50px rgba(0,234,255,.10);
+}
+.splash-crown{font-size:64px;filter:drop-shadow(0 0 20px var(--gold));margin-bottom:10px}
+.splash-kicker{font-size:11px;letter-spacing:4px;color:var(--muted);margin-bottom:12px}
+.splash-title{font-size:clamp(38px,10vw,70px);font-weight:1000;letter-spacing:6px;color:var(--main);text-shadow:0 0 12px var(--main),0 0 35px var(--main)}
+.splash-created{margin-top:25px;color:#aab6cc;font-size:12px;letter-spacing:3px}
+.splash-name{margin-top:8px;font-size:26px;font-weight:1000;letter-spacing:5px;color:var(--gold);text-shadow:0 0 10px var(--gold),0 0 25px var(--gold)}
+.start-game{
+    margin-top:30px;
+    width:100%;
+    padding:17px;
+    border-radius:16px;
+    background:linear-gradient(135deg,var(--main),var(--second));
+    box-shadow:0 0 30px rgba(0,234,255,.22);
+    font-size:17px;
+}
+.splash-hint{margin-top:14px;font-size:10px;color:#64738a;letter-spacing:1px}
+
+.music-panel{
+    margin-top:20px;
+    padding:15px;
+    border-radius:18px;
+    background:rgba(255,255,255,.035);
+    border:1px solid rgba(255,255,255,.08);
+}
+.music-title{text-align:center;color:var(--muted);font-size:10px;letter-spacing:3px;font-weight:900}
+.music-now{text-align:center;margin:7px 0 12px;color:var(--main);font-size:14px;font-weight:900}
+.music-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.music-actions button{padding:11px 7px;border-radius:11px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09)}
+.music-volume{display:flex;align-items:center;gap:10px;margin-top:10px;color:var(--muted);font-size:11px}
+.music-volume input{width:100%;accent-color:var(--main)}
+.music-notice{
+    position:fixed;
+    left:50%;
+    bottom:22px;
+    z-index:900;
+    transform:translateX(-50%) translateY(20px);
+    opacity:0;
+    pointer-events:none;
+    padding:11px 17px;
+    border-radius:14px;
+    background:rgba(4,10,24,.94);
+    border:1px solid rgba(0,234,255,.25);
+    color:#fff;
+    box-shadow:0 0 25px rgba(0,234,255,.16);
+    transition:.25s ease;
+    white-space:nowrap;
+    font-size:12px;
+    font-weight:900;
+}
+.music-notice.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:550px){
+    .splash-card{padding:32px 20px}
+    .splash-name{font-size:21px;letter-spacing:3px}
+    .music-actions{grid-template-columns:1fr 1fr}
+    .music-actions button:last-child{grid-column:1/-1}
+}
+
 </style>
 </head>
 
 <body>
+
+<div id="splashScreen">
+  <div class="splash-card">
+    <div class="splash-crown">👑</div>
+    <div class="splash-kicker">BIENVENIDO A</div>
+    <div class="splash-title">XO MD5</div>
+    <div class="splash-created">ESTE JUEGO FUE CREADO POR</div>
+    <div class="splash-name">MOUAD QATIB</div>
+    <button class="start-game" id="startGameBtn">🎮 INICIAR JUEGO</button>
+    <div class="splash-hint">Pulsa iniciar para activar la música y los sonidos.</div>
+  </div>
+</div>
+<div id="musicNotice" class="music-notice"></div>
+
 
 <!-- =====================================================
      FONDO
@@ -1286,6 +1381,23 @@ footer{
         </div>
 
     </div>
+
+
+
+<div class="music-panel">
+  <div class="music-title">🎵 CENTRO DE MÚSICA</div>
+  <div class="music-now" id="musicNow">🎵 NEON DRIVE</div>
+  <div class="music-actions">
+    <button type="button" onclick="previousMusicTrack()">⏮ ANTERIOR</button>
+    <button type="button" id="musicPlayBtn" onclick="toggleMusicPanel()">▶️ PLAY</button>
+    <button type="button" onclick="nextMusicTrack()">⏭ SIGUIENTE</button>
+  </div>
+  <div class="music-volume">
+    <span>🔉</span>
+    <input id="musicVolume" type="range" min="0" max="30" value="16" oninput="setGameMusicVolume(this.value/100)">
+    <span>🔊</span>
+  </div>
+</div>
 
 
     <!-- CONTROLES -->
@@ -2673,6 +2785,72 @@ document
 
 renderBoard();
 updateTurnMessage();
+
+
+/* =====================================================
+   INTERFAZ DE MÚSICA + PANTALLA DE INICIO
+===================================================== */
+window.updateSoundButton=function(){
+    const b=document.getElementById("soundToggle");
+    if(!b) return;
+    b.textContent=window.gameSoundEnabled
+        ? "🔊 SONIDO: ACTIVADO"
+        : "🔇 SONIDO: SILENCIADO";
+    b.classList.toggle("sound-on",!!window.gameSoundEnabled);
+};
+
+window.updateMusicPanel=function(){
+    const now=document.getElementById("musicNow");
+    const play=document.getElementById("musicPlayBtn");
+    if(now && typeof window.getCurrentMusicName==="function"){
+        now.textContent="🎵 "+window.getCurrentMusicName();
+    }
+    if(play && typeof window.isMusicPlaying==="function"){
+        play.textContent=window.isMusicPlaying() ? "⏸️ PAUSAR" : "▶️ PLAY";
+    }
+};
+
+window.showMusicNotice=function(text){
+    const n=document.getElementById("musicNotice");
+    if(!n) return;
+    n.textContent=text;
+    n.classList.add("show");
+    clearTimeout(window.__musicNoticeTimer);
+    window.__musicNoticeTimer=setTimeout(()=>n.classList.remove("show"),1800);
+};
+
+window.toggleMusicPanel=function(){
+    if(typeof window.isMusicPlaying==="function" && window.isMusicPlaying()){
+        window.stopBackgroundMusic();
+    }else{
+        window.startBackgroundMusic();
+    }
+    window.updateMusicPanel();
+    window.updateSoundButton();
+};
+
+document.addEventListener("DOMContentLoaded",()=>{
+    const start=document.getElementById("startGameBtn");
+    const splash=document.getElementById("splashScreen");
+
+    if(start && splash){
+        start.addEventListener("click",()=>{
+            splash.style.transition="opacity .35s ease, visibility .35s ease";
+            splash.style.opacity="0";
+            splash.style.visibility="hidden";
+            window.gameSoundEnabled=true;
+            if(typeof window.startBackgroundMusic==="function"){
+                window.startBackgroundMusic();
+            }
+            if(typeof window.updateMusicPanel==="function"){
+                window.updateMusicPanel();
+            }
+        });
+    }
+
+    window.updateSoundButton();
+    window.updateMusicPanel();
+});
 
 </script>
 
