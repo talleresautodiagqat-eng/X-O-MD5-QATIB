@@ -1164,6 +1164,7 @@ footer{
     border:1px solid rgba(255,255,255,.08);
 }
 .music-title{text-align:center;color:var(--muted);font-size:10px;letter-spacing:3px;font-weight:900}
+.music-auto{text-align:center;color:#71819a;font-size:9px;letter-spacing:1.5px;margin-top:2px}
 .music-now{text-align:center;margin:7px 0 12px;color:var(--main);font-size:14px;font-weight:900}
 .music-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .music-actions button{padding:11px 7px;border-radius:11px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09)}
@@ -1410,6 +1411,7 @@ footer{
 <div class="music-panel">
   <div class="music-title">🎵 CENTRO DE MÚSICA</div>
   <div class="music-now" id="musicNow">🎵 NEON DRIVE</div>
+  <div class="music-auto" id="musicAuto">🔁 CAMBIO AUTOMÁTICO DE PISTA ACTIVADO</div>
   <div class="music-actions">
     <button type="button" onclick="previousMusicTrack()">⏮ ANTERIOR</button>
     <button type="button" id="musicPlayBtn" onclick="toggleMusicPanel()">▶️ PLAY</button>
@@ -2230,9 +2232,27 @@ function easyRobot(){
     if(!empty.length)
         return null;
 
-    return empty[
+    /*
+       FÁCIL está pensado para que el jugador
+       tenga muchas oportunidades de ganar.
+
+       El robot NO busca ganar y NO bloquea
+       una victoria inmediata de X.
+       Además evita una jugada que le dé
+       la victoria instantánea a O.
+    */
+
+    const safe = empty.filter(index=>{
+        const test = [...board];
+        test[index] = "O";
+        return !(checkWinner(test)?.player === "O");
+    });
+
+    const candidates = safe.length ? safe : empty;
+
+    return candidates[
         Math.floor(
-            Math.random() * empty.length
+            Math.random() * candidates.length
         )
     ];
 
@@ -2798,253 +2818,3 @@ robotBtn.addEventListener(
 
         xLabel.textContent =
             "TÚ • X";
-
-        oLabel.textContent =
-            "ROBOT • O";
-
-        newGame();
-
-    }
-);
-
-
-/* =====================================================
-   DIFICULTADES
-===================================================== */
-
-document
-.querySelectorAll(".diff")
-.forEach(button=>{
-
-    button.addEventListener(
-        "click",
-        ()=>{
-
-            document
-            .querySelectorAll(".diff")
-            .forEach(btn =>
-                btn.classList.remove(
-                    "active"
-                )
-            );
-
-            button.classList.add(
-                "active"
-            );
-
-            difficulty =
-                button.dataset.difficulty;
-
-            newGame();
-
-        }
-    );
-
-});
-
-
-/* =====================================================
-   NUEVA PARTIDA
-===================================================== */
-
-function newGame(){
-
-    board =
-        Array(9).fill("");
-
-    currentPlayer =
-        "X";
-
-    gameOver =
-        false;
-
-    robotThinking =
-        false;
-
-    winLine.style.display =
-        "none";
-
-    winLine.style.width =
-        "0";
-
-    message.classList.remove(
-        "robot-thinking"
-    );
-
-    renderBoard();
-
-    updateTurnMessage();
-
-}
-
-
-/* =====================================================
-   BOTÓN NUEVA PARTIDA
-===================================================== */
-
-document
-.getElementById("newGame")
-.addEventListener(
-    "click",
-    newGame
-);
-
-
-/* =====================================================
-   REINICIAR MARCADOR
-===================================================== */
-
-document
-.getElementById("resetScore")
-.addEventListener(
-    "click",
-    ()=>{
-
-        scoreX = 0;
-        scoreO = 0;
-
-        scoreXElement.textContent =
-            "0";
-
-        scoreOElement.textContent =
-            "0";
-
-        newGame();
-
-    }
-);
-
-
-/* =====================================================
-   CAMBIO DE COLORES
-===================================================== */
-
-document
-.querySelectorAll(".theme")
-.forEach(theme=>{
-
-    theme.addEventListener(
-        "click",
-        ()=>{
-
-            document.documentElement
-                .style
-                .setProperty(
-                    "--main",
-                    theme.dataset.main
-                );
-
-            document.documentElement
-                .style
-                .setProperty(
-                    "--second",
-                    theme.dataset.second
-                );
-
-            document
-                .querySelectorAll(".theme")
-                .forEach(t =>
-                    t.classList.remove(
-                        "active"
-                    )
-                );
-
-            theme.classList.add(
-                "active"
-            );
-
-        }
-    );
-
-});
-
-
-
-const colorToggle=document.getElementById("colorToggle");
-const themePanel=document.getElementById("themePanel");
-if(colorToggle && themePanel){
-  colorToggle.addEventListener("click",()=>{
-    themePanel.classList.toggle("show");
-    colorToggle.textContent=themePanel.classList.contains("show")
-      ? "🌈 OCULTAR COLORES"
-      : "🌈 CAMBIAR COLORES";
-  });
-}
-
-/* =====================================================
-   INICIO
-===================================================== */
-
-renderBoard();
-updateTurnMessage();
-
-
-/* =====================================================
-   INTERFAZ DE MÚSICA + PANTALLA DE INICIO
-===================================================== */
-window.updateSoundButton=function(){
-    const b=document.getElementById("soundToggle");
-    if(!b) return;
-    b.textContent=window.gameSoundEnabled
-        ? "🔊 SONIDO: ACTIVADO"
-        : "🔇 SONIDO: SILENCIADO";
-    b.classList.toggle("sound-on",!!window.gameSoundEnabled);
-};
-
-window.updateMusicPanel=function(){
-    const now=document.getElementById("musicNow");
-    const play=document.getElementById("musicPlayBtn");
-    if(now && typeof window.getCurrentMusicName==="function"){
-        now.textContent="🎵 "+window.getCurrentMusicName();
-    }
-    if(play && typeof window.isMusicPlaying==="function"){
-        play.textContent=window.isMusicPlaying() ? "⏸️ PAUSAR" : "▶️ PLAY";
-    }
-};
-
-window.showMusicNotice=function(text){
-    const n=document.getElementById("musicNotice");
-    if(!n) return;
-    n.textContent=text;
-    n.classList.add("show");
-    clearTimeout(window.__musicNoticeTimer);
-    window.__musicNoticeTimer=setTimeout(()=>n.classList.remove("show"),1800);
-};
-
-window.toggleMusicPanel=function(){
-    if(typeof window.isMusicPlaying==="function" && window.isMusicPlaying()){
-        window.stopBackgroundMusic();
-    }else{
-        window.startBackgroundMusic();
-    }
-    window.updateMusicPanel();
-    window.updateSoundButton();
-};
-
-document.addEventListener("DOMContentLoaded",()=>{
-    const start=document.getElementById("startGameBtn");
-    const splash=document.getElementById("splashScreen");
-
-    if(start && splash){
-        start.addEventListener("click",()=>{
-            splash.style.transition="opacity .35s ease, visibility .35s ease";
-            splash.style.opacity="0";
-            splash.style.visibility="hidden";
-            window.gameSoundEnabled=true;
-            if(typeof window.startBackgroundMusic==="function"){
-                window.startBackgroundMusic();
-            }
-            if(typeof window.updateMusicPanel==="function"){
-                window.updateMusicPanel();
-            }
-        });
-    }
-
-    window.updateSoundButton();
-    window.updateMusicPanel();
-});
-
-</script>
-
-</body>
-</html>
