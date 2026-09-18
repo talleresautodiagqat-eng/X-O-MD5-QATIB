@@ -1034,6 +1034,87 @@ footer{
         height:32px;
     }
 }
+
+/* =====================================================
+   OPTIMIZACIÓN MÓVIL
+===================================================== */
+@media (max-width:550px){
+    .background{
+        contain:strict;
+    }
+
+    .orb{
+        filter:blur(32px);
+        opacity:.20;
+        animation:none;
+    }
+
+    .orb:nth-child(n+3){
+        display:none;
+    }
+
+    .aurora{
+        opacity:.06;
+        filter:blur(24px);
+        animation:none;
+    }
+
+    .particles{
+        opacity:.07;
+        animation:none;
+    }
+
+    .grid-bg{
+        opacity:.45;
+        mask-image:none;
+    }
+
+    .corner{
+        box-shadow:0 0 8px var(--main),0 0 18px var(--main);
+        animation:cornerPulse 2.5s ease-in-out infinite;
+    }
+
+    .panel{
+        backdrop-filter:none;
+        -webkit-backdrop-filter:none;
+        box-shadow:0 15px 45px rgba(0,0,0,.55);
+    }
+
+    h1{
+        animation:none;
+        background-size:100%;
+    }
+
+    .cell{
+        transition:border-color .12s ease,box-shadow .12s ease;
+    }
+
+    .cell::after{
+        display:none;
+    }
+
+    .cell:hover:not(.filled){
+        box-shadow:none;
+    }
+
+    .mark{
+        text-shadow:0 0 8px var(--x-color),0 0 18px var(--x-color);
+    }
+
+    .cell.o .mark{
+        text-shadow:0 0 8px var(--o-color),0 0 18px var(--o-color);
+    }
+
+    .cell.winner{
+        animation:none;
+        box-shadow:0 0 12px var(--gold),0 0 25px rgba(255,216,77,.35);
+    }
+
+    .win-line{
+        box-shadow:0 0 6px var(--gold),0 0 16px var(--gold);
+    }
+}
+
 </style>
 </head>
 
