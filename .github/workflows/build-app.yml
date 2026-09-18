@@ -1,4 +1,4 @@
-name: XO MD5 QATIB - App
+name: XO MD5 QATIB - Android APK
 
 on:
   push:
@@ -10,33 +10,85 @@ permissions:
   contents: read
 
 jobs:
-  package:
-    name: Empaquetar aplicación
+  build-apk:
+    name: Crear APK Android
     runs-on: ubuntu-latest
 
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
 
-      - name: Preparar aplicación
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Preparar proyecto Android
         shell: bash
         run: |
           set -e
-          mkdir -p dist
-          cp "preview (1).html" "dist/index.html"
-          printf '%s\n' "XO MD5 QATIB" "Aplicación web de Tres en Raya / X-O." "" "Abre index.html en un navegador." > "dist/README.txt"
 
-      - name: Crear ZIP descargable
+          mkdir -p www
+          cp "preview (1).html" "www/index.html"
+
+          cat > package.json <<'EOF'
+          {
+            "name": "xo-md5-qatib",
+            "version": "1.0.0",
+            "private": true,
+            "scripts": {
+              "build": "npx cap sync android"
+            },
+            "dependencies": {
+              "@capacitor/core": "^7.4.3",
+              "@capacitor/android": "^7.4.3"
+            },
+            "devDependencies": {
+              "@capacitor/cli": "^7.4.3"
+            }
+          }
+          EOF
+
+          cat > capacitor.config.ts <<'EOF'
+          import type { CapacitorConfig } from '@capacitor/cli';
+
+          const config: CapacitorConfig = {
+            appId: 'com.mouadqatib.xomd5qatib',
+            appName: 'XO MD5 QATIB',
+            webDir: 'www'
+          };
+
+          export default config;
+          EOF
+
+      - name: Instalar Capacitor
+        run: npm install
+
+      - name: Crear proyecto Android
+        run: npx cap add android
+
+      - name: Sincronizar aplicación
+        run: npx cap sync android
+
+      - name: Crear APK
         shell: bash
         run: |
           set -e
-          cd dist
-          zip -r "../XO-MD5-QATIB.zip" .
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
 
-      - name: Subir aplicación como Artifact
+      - name: Preparar APK para descargar
+        shell: bash
+        run: |
+          set -e
+          cp android/app/build/outputs/apk/debug/app-debug.apk XO-MD5-QATIB.apk
+
+      - name: Subir APK
         uses: actions/upload-artifact@v4
         with:
-          name: XO-MD5-QATIB
-          path: XO-MD5-QATIB.zip
+          name: XO-MD5-QATIB-APK
+          path: XO-MD5-QATIB.apk
           if-no-files-found: error
           retention-days: 90
