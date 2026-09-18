@@ -1,0 +1,2577 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XO MD5 QAT</title>
+
+<style>
+:root{
+    --main:#00eaff;
+    --second:#8a2be2;
+    --x-color:#00eaff;
+    --o-color:#ff2bd6;
+    --gold:#ffd84d;
+    --bg:#02040b;
+    --text:#fff;
+    --muted:#9aaac2;
+}
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+html,body{
+    min-height:100%;
+}
+
+body{
+    min-height:100vh;
+    font-family:Arial,Helvetica,sans-serif;
+    color:var(--text);
+    overflow-x:hidden;
+    background:#02040b;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:25px;
+}
+
+/* =====================================================
+   FONDO MULTICOLOR ANIMADO
+===================================================== */
+
+.background{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    overflow:hidden;
+    pointer-events:none;
+    background:
+        radial-gradient(
+            circle at 50% 50%,
+            rgba(0,234,255,.05),
+            transparent 45%
+        ),
+        #02040b;
+}
+
+/* Grandes luces */
+
+.orb{
+    position:absolute;
+    width:35vw;
+    height:35vw;
+    min-width:260px;
+    min-height:260px;
+    border-radius:50%;
+    filter:blur(70px);
+    opacity:.32;
+    mix-blend-mode:screen;
+    animation:
+        orbMove 14s ease-in-out infinite alternate,
+        orbColor 9s linear infinite;
+}
+
+.orb:nth-child(1){
+    top:-12%;
+    left:-8%;
+    background:#00eaff;
+}
+
+.orb:nth-child(2){
+    top:5%;
+    right:-10%;
+    background:#ff00d4;
+    animation-delay:-3s;
+}
+
+.orb:nth-child(3){
+    bottom:-15%;
+    left:10%;
+    background:#6a00ff;
+    animation-delay:-6s;
+}
+
+.orb:nth-child(4){
+    bottom:-10%;
+    right:5%;
+    background:#00ff88;
+    animation-delay:-9s;
+}
+
+.orb:nth-child(5){
+    top:40%;
+    left:40%;
+    width:25vw;
+    height:25vw;
+    background:#ff7a00;
+    opacity:.18;
+    animation-delay:-4s;
+}
+
+@keyframes orbMove{
+    0%{
+        transform:translate3d(-5%, -5%,0) scale(.9);
+    }
+    50%{
+        transform:translate3d(10%,8%,0) scale(1.15);
+    }
+    100%{
+        transform:translate3d(-8%,12%,0) scale(.95);
+    }
+}
+
+@keyframes orbColor{
+    0%{
+        filter:
+            blur(70px)
+            hue-rotate(0deg);
+    }
+
+    25%{
+        filter:
+            blur(75px)
+            hue-rotate(70deg);
+    }
+
+    50%{
+        filter:
+            blur(65px)
+            hue-rotate(160deg);
+    }
+
+    75%{
+        filter:
+            blur(80px)
+            hue-rotate(250deg);
+    }
+
+    100%{
+        filter:
+            blur(70px)
+            hue-rotate(360deg);
+    }
+}
+
+/* Aurora */
+
+.aurora{
+    position:absolute;
+    width:130%;
+    height:45%;
+    left:-15%;
+    top:25%;
+    opacity:.13;
+    filter:blur(45px);
+    background:
+        linear-gradient(
+            90deg,
+            #00eaff,
+            #8a2be2,
+            #ff00cc,
+            #ff7a00,
+            #00ff88,
+            #00eaff
+        );
+    background-size:300% 100%;
+    transform:rotate(-8deg);
+    animation:
+        auroraMove 12s linear infinite,
+        auroraPulse 5s ease-in-out infinite;
+}
+
+@keyframes auroraMove{
+    0%{background-position:0% 50%;}
+    50%{background-position:100% 50%;}
+    100%{background-position:0% 50%;}
+}
+
+@keyframes auroraPulse{
+    0%,100%{
+        opacity:.08;
+        transform:rotate(-8deg) scale(1);
+    }
+    50%{
+        opacity:.2;
+        transform:rotate(-5deg) scale(1.08);
+    }
+}
+
+/* Partículas */
+
+.particles{
+    position:absolute;
+    inset:0;
+    background-image:
+        radial-gradient(circle,rgba(255,255,255,.8) 1px,transparent 1px),
+        radial-gradient(circle,rgba(0,234,255,.7) 1px,transparent 1px),
+        radial-gradient(circle,rgba(255,0,204,.6) 1px,transparent 1px);
+    background-size:
+        90px 90px,
+        140px 140px,
+        190px 190px;
+    background-position:
+        0 0,
+        40px 60px,
+        100px 20px;
+    opacity:.13;
+    animation:starsMove 25s linear infinite;
+}
+
+@keyframes starsMove{
+    from{
+        transform:translateY(0);
+    }
+    to{
+        transform:translateY(-90px);
+    }
+}
+
+/* Rejilla */
+
+.grid-bg{
+    position:absolute;
+    inset:0;
+    background:
+        linear-gradient(
+            rgba(255,255,255,.018) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(255,255,255,.018) 1px,
+            transparent 1px
+        );
+    background-size:45px 45px;
+    mask-image:linear-gradient(
+        to bottom,
+        transparent,
+        black 20%,
+        black 80%,
+        transparent
+    );
+}
+
+/* =====================================================
+   ESQUINAS
+===================================================== */
+
+.corner{
+    position:fixed;
+    width:20px;
+    height:20px;
+    border-radius:50%;
+    z-index:4;
+    background:var(--main);
+    box-shadow:
+        0 0 10px var(--main),
+        0 0 30px var(--main),
+        0 0 70px var(--main);
+    animation:
+        cornerPulse 2s ease-in-out infinite,
+        cornerHue 8s linear infinite;
+}
+
+.c1{top:20px;left:20px;}
+.c2{top:20px;right:20px;animation-delay:-1s;}
+.c3{bottom:20px;left:20px;animation-delay:-2s;}
+.c4{bottom:20px;right:20px;animation-delay:-3s;}
+
+@keyframes cornerPulse{
+    0%,100%{
+        transform:scale(.65);
+        opacity:.35;
+    }
+    50%{
+        transform:scale(1.25);
+        opacity:1;
+    }
+}
+
+@keyframes cornerHue{
+    from{
+        filter:hue-rotate(0deg);
+    }
+    to{
+        filter:hue-rotate(360deg);
+    }
+}
+
+/* =====================================================
+   CONTENEDOR
+===================================================== */
+
+.container{
+    width:min(760px,100%);
+    position:relative;
+    z-index:5;
+}
+
+/* =====================================================
+   CABECERA
+===================================================== */
+
+header{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.crown{
+    display:block;
+    font-size:55px;
+    filter:drop-shadow(0 0 15px var(--gold));
+    animation:
+        crownFloat 2s ease-in-out infinite,
+        crownGlow 3s linear infinite;
+}
+
+@keyframes crownFloat{
+    0%,100%{
+        transform:translateY(0) rotate(-2deg);
+    }
+    50%{
+        transform:translateY(-10px) rotate(2deg);
+    }
+}
+
+@keyframes crownGlow{
+    0%,100%{
+        filter:
+            drop-shadow(0 0 10px #ffd84d);
+    }
+    50%{
+        filter:
+            drop-shadow(0 0 30px #fff000);
+    }
+}
+
+h1{
+    font-size:clamp(42px,10vw,78px);
+    font-weight:1000;
+    letter-spacing:8px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #00eaff,
+            #ffffff,
+            #ff2bd6,
+            #8a2be2,
+            #00ff88,
+            #00eaff
+        );
+
+    background-size:400%;
+
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+
+    animation:titleFlow 6s linear infinite;
+}
+
+@keyframes titleFlow{
+    from{
+        background-position:0%;
+    }
+    to{
+        background-position:400%;
+    }
+}
+
+.subtitle{
+    margin-top:5px;
+    color:var(--muted);
+    letter-spacing:5px;
+    font-size:12px;
+}
+
+/* =====================================================
+   PANEL
+===================================================== */
+
+.panel{
+    background:rgba(4,10,24,.72);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:28px;
+    padding:25px;
+    backdrop-filter:blur(25px);
+
+    box-shadow:
+        0 30px 100px rgba(0,0,0,.65),
+        inset 0 0 40px rgba(255,255,255,.025);
+
+    position:relative;
+    overflow:hidden;
+}
+
+.panel::before{
+    content:"";
+    position:absolute;
+    inset:-2px;
+    border-radius:30px;
+    padding:1px;
+
+    background:
+        linear-gradient(
+            120deg,
+            transparent,
+            rgba(0,234,255,.35),
+            transparent,
+            rgba(255,0,204,.35),
+            transparent
+        );
+
+    background-size:300% 300%;
+    animation:borderFlow 7s linear infinite;
+
+    mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+
+    mask-composite:exclude;
+    pointer-events:none;
+}
+
+@keyframes borderFlow{
+    0%{background-position:0% 0%;}
+    100%{background-position:300% 300%;}
+}
+
+/* =====================================================
+   BOTONES
+===================================================== */
+
+button{
+    border:0;
+    color:white;
+    cursor:pointer;
+    font-weight:900;
+    letter-spacing:1px;
+    font-family:inherit;
+    transition:.2s ease;
+}
+
+button:hover{
+    transform:translateY(-2px);
+}
+
+button:active{
+    transform:scale(.96);
+}
+
+.mode-buttons{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+
+.mode-btn{
+    padding:15px;
+    border-radius:15px;
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.1);
+}
+
+.mode-btn.active{
+    background:
+        linear-gradient(
+            135deg,
+            var(--main),
+            var(--second)
+        );
+
+    box-shadow:
+        0 0 25px rgba(0,234,255,.3);
+}
+
+/* =====================================================
+   DIFICULTAD
+===================================================== */
+
+.difficulty{
+    margin-top:15px;
+    display:none;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+}
+
+.difficulty.show{
+    display:grid;
+}
+
+.diff{
+    padding:11px 5px;
+    border-radius:12px;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.1);
+}
+
+.diff.active{
+    background:var(--main);
+    color:#001018;
+    box-shadow:0 0 20px var(--main);
+}
+
+/* =====================================================
+   MARCADOR
+===================================================== */
+
+.scoreboard{
+    margin:22px 0;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+
+.score{
+    padding:15px;
+    border-radius:18px;
+    text-align:center;
+    background:rgba(255,255,255,.035);
+    border:1px solid rgba(255,255,255,.08);
+}
+
+.score-name{
+    font-size:12px;
+    color:var(--muted);
+    letter-spacing:2px;
+}
+
+.score-number{
+    margin-top:5px;
+    font-size:30px;
+    font-weight:1000;
+}
+
+.score-x{
+    color:var(--x-color);
+    text-shadow:
+        0 0 10px var(--x-color),
+        0 0 25px var(--x-color);
+}
+
+.score-o{
+    color:var(--o-color);
+    text-shadow:
+        0 0 10px var(--o-color),
+        0 0 25px var(--o-color);
+}
+
+/* =====================================================
+   MENSAJE
+===================================================== */
+
+.message{
+    min-height:45px;
+    text-align:center;
+    margin-bottom:12px;
+    font-size:18px;
+    font-weight:900;
+    color:var(--main);
+    text-shadow:
+        0 0 10px var(--main),
+        0 0 25px var(--main);
+}
+
+.robot-thinking{
+    animation:
+        robotThinking .45s ease-in-out infinite alternate;
+}
+
+@keyframes robotThinking{
+    from{
+        opacity:.4;
+    }
+    to{
+        opacity:1;
+    }
+}
+
+/* =====================================================
+   TABLERO
+===================================================== */
+
+.board-wrapper{
+    position:relative;
+    width:min(500px,100%);
+    aspect-ratio:1;
+    margin:auto;
+}
+
+.board{
+    position:relative;
+    width:100%;
+    height:100%;
+
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    grid-template-rows:repeat(3,1fr);
+
+    gap:10px;
+    padding:10px;
+
+    border-radius:25px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,.08),
+            rgba(255,255,255,.02)
+        );
+
+    border:1px solid rgba(255,255,255,.12);
+
+    box-shadow:
+        0 0 40px rgba(0,234,255,.08),
+        inset 0 0 35px rgba(0,0,0,.4);
+
+    overflow:hidden;
+}
+
+/* =====================================================
+   CASILLAS
+===================================================== */
+
+.cell{
+    position:relative;
+    min-width:0;
+    min-height:0;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    border-radius:18px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.075),
+            rgba(255,255,255,.02)
+        );
+
+    border:1px solid rgba(255,255,255,.09);
+
+    cursor:pointer;
+    overflow:hidden;
+
+    transition:
+        .2s ease;
+}
+
+.cell::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:
+        radial-gradient(
+            circle at center,
+            var(--main),
+            transparent 65%
+        );
+    opacity:0;
+    transition:.2s;
+}
+
+.cell:hover:not(.filled)::after{
+    opacity:.08;
+}
+
+.cell:hover:not(.filled){
+    border-color:var(--main);
+    box-shadow:
+        0 0 20px rgba(0,234,255,.18);
+}
+
+/* =====================================================
+   X Y O
+===================================================== */
+
+.mark{
+    position:relative;
+    z-index:3;
+    font-size:clamp(55px,12vw,105px);
+    line-height:1;
+    font-weight:1000;
+    animation:markIn .3s cubic-bezier(.17,.67,.35,1.4);
+}
+
+.cell.x .mark{
+    color:var(--x-color);
+    text-shadow:
+        0 0 8px var(--x-color),
+        0 0 20px var(--x-color),
+        0 0 45px var(--x-color);
+}
+
+.cell.o .mark{
+    color:var(--o-color);
+    text-shadow:
+        0 0 8px var(--o-color),
+        0 0 20px var(--o-color),
+        0 0 45px var(--o-color);
+}
+
+@keyframes markIn{
+    from{
+        opacity:0;
+        transform:scale(.15) rotate(-25deg);
+    }
+    to{
+        opacity:1;
+        transform:scale(1) rotate(0);
+    }
+}
+
+/* =====================================================
+   GANADOR
+===================================================== */
+
+.cell.winner{
+    border-color:var(--gold);
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(255,216,77,.2),
+            rgba(255,216,77,.04)
+        );
+
+    box-shadow:
+        0 0 15px var(--gold),
+        0 0 40px rgba(255,216,77,.5),
+        inset 0 0 30px rgba(255,216,77,.12);
+
+    animation:winnerPulse .7s infinite alternate;
+}
+
+@keyframes winnerPulse{
+    from{
+        transform:scale(1);
+    }
+    to{
+        transform:scale(1.04);
+    }
+}
+
+/* =====================================================
+   LÍNEA GANADORA
+===================================================== */
+
+.win-line{
+    position:absolute;
+    z-index:20;
+
+    height:7px;
+    border-radius:20px;
+
+    background:var(--gold);
+
+    box-shadow:
+        0 0 8px var(--gold),
+        0 0 20px var(--gold),
+        0 0 45px var(--gold);
+
+    transform-origin:left center;
+
+    pointer-events:none;
+    display:none;
+}
+
+/* =====================================================
+   CONTROLES
+===================================================== */
+
+.controls{
+    display:flex;
+    gap:10px;
+    margin-top:20px;
+}
+
+.control-btn{
+    flex:1;
+    padding:15px;
+    border-radius:15px;
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.1);
+}
+
+.new-game{
+    background:
+        linear-gradient(
+            135deg,
+            var(--main),
+            var(--second)
+        );
+}
+
+/* =====================================================
+   TEMAS
+===================================================== */
+
+.theme-section{
+    margin-top:25px;
+    padding-top:20px;
+    border-top:1px solid rgba(255,255,255,.08);
+}
+
+.theme-title{
+    text-align:center;
+    color:var(--muted);
+    font-size:11px;
+    font-weight:bold;
+    letter-spacing:3px;
+    margin-bottom:15px;
+}
+
+.themes{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:12px;
+}
+
+.theme{
+    width:35px;
+    height:35px;
+    border-radius:50%;
+    border:3px solid rgba(255,255,255,.25);
+    box-shadow:0 0 13px currentColor;
+}
+
+.theme.active{
+    border-color:white;
+    box-shadow:
+        0 0 10px currentColor,
+        0 0 25px currentColor,
+        0 0 40px currentColor;
+}
+
+/* =====================================================
+   COLORES
+===================================================== */
+
+.theme-cyan{
+    background:#00eaff;
+    color:#00eaff;
+}
+
+.theme-purple{
+    background:#9b5cff;
+    color:#9b5cff;
+}
+
+.theme-pink{
+    background:#ff2bd6;
+    color:#ff2bd6;
+}
+
+.theme-red{
+    background:#ff3158;
+    color:#ff3158;
+}
+
+.theme-orange{
+    background:#ff8a00;
+    color:#ff8a00;
+}
+
+.theme-yellow{
+    background:#ffe600;
+    color:#ffe600;
+}
+
+.theme-green{
+    background:#00ff88;
+    color:#00ff88;
+}
+
+.theme-lime{
+    background:#b6ff00;
+    color:#b6ff00;
+}
+
+.theme-blue{
+    background:#287cff;
+    color:#287cff;
+}
+
+.theme-ice{
+    background:#8fffff;
+    color:#8fffff;
+}
+
+.theme-white{
+    background:#fff;
+    color:#fff;
+}
+
+.theme-gold{
+    background:#ffd84d;
+    color:#ffd84d;
+}
+
+.theme-violet{
+    background:#7000ff;
+    color:#7000ff;
+}
+
+.theme-magenta{
+    background:#ff0099;
+    color:#ff0099;
+}
+
+.theme-turquoise{
+    background:#00ffd5;
+    color:#00ffd5;
+}
+
+.theme-rainbow{
+    background:
+        linear-gradient(
+            135deg,
+            #ff0055,
+            #ff8a00,
+            #fff000,
+            #00ff88,
+            #00eaff,
+            #8a2be2
+        );
+    color:#00eaff;
+}
+
+/* =====================================================
+   CREADOR
+===================================================== */
+
+.creator{
+    text-align:center;
+    margin-top:25px;
+    padding-top:20px;
+    border-top:1px solid rgba(255,255,255,.08);
+}
+
+.creator-small{
+    color:#71819a;
+    font-size:10px;
+    letter-spacing:3px;
+}
+
+.creator-name{
+    margin-top:7px;
+    color:var(--gold);
+    font-size:20px;
+    font-weight:1000;
+    letter-spacing:4px;
+    text-shadow:
+        0 0 8px var(--gold),
+        0 0 25px var(--gold);
+}
+
+/* =====================================================
+   FOOTER
+===================================================== */
+
+footer{
+    text-align:center;
+    margin-top:18px;
+    font-size:9px;
+    letter-spacing:3px;
+    color:#536176;
+}
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media(max-width:550px){
+
+    body{
+        padding:12px;
+    }
+
+    .panel{
+        padding:16px;
+        border-radius:22px;
+    }
+
+    h1{
+        letter-spacing:4px;
+    }
+
+    .subtitle{
+        letter-spacing:3px;
+    }
+
+    .board{
+        gap:7px;
+        padding:7px;
+    }
+
+    .cell{
+        border-radius:13px;
+    }
+
+    .controls{
+        flex-direction:column;
+    }
+
+    .themes{
+        gap:10px;
+    }
+
+    .theme{
+        width:32px;
+        height:32px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- =====================================================
+     FONDO
+===================================================== -->
+
+<div class="background">
+
+    <div class="orb"></div>
+    <div class="orb"></div>
+    <div class="orb"></div>
+    <div class="orb"></div>
+    <div class="orb"></div>
+
+    <div class="aurora"></div>
+    <div class="particles"></div>
+    <div class="grid-bg"></div>
+
+</div>
+
+<div class="corner c1"></div>
+<div class="corner c2"></div>
+<div class="corner c3"></div>
+<div class="corner c4"></div>
+
+
+<div class="container">
+
+<header>
+
+    <span class="crown">👑</span>
+
+    <h1>XO MD5</h1>
+
+    <div class="subtitle">
+        QAT EDITION • NEON BATTLE
+    </div>
+
+</header>
+
+
+<div class="panel">
+
+    <!-- MODOS -->
+
+    <div class="mode-buttons">
+
+        <button
+            class="mode-btn active"
+            id="twoPlayersBtn">
+            👥 DOS JUGADORES
+        </button>
+
+        <button
+            class="mode-btn"
+            id="robotBtn">
+            🤖 CONTRA ROBOT
+        </button>
+
+    </div>
+
+
+    <!-- DIFICULTAD -->
+
+    <div
+        class="difficulty"
+        id="difficultyBox">
+
+        <button
+            class="diff"
+            data-difficulty="easy">
+            🟢 FÁCIL
+        </button>
+
+        <button
+            class="diff"
+            data-difficulty="medium">
+            🟡 MEDIANO
+        </button>
+
+        <button
+            class="diff active"
+            data-difficulty="hard">
+            🔴 DIFÍCIL
+        </button>
+
+    </div>
+
+
+    <!-- MARCADOR -->
+
+    <div class="scoreboard">
+
+        <div class="score">
+
+            <div
+                class="score-name"
+                id="xLabel">
+                JUGADOR X
+            </div>
+
+            <div
+                class="score-number score-x"
+                id="scoreX">
+                0
+            </div>
+
+        </div>
+
+
+        <div class="score">
+
+            <div
+                class="score-name"
+                id="oLabel">
+                JUGADOR O
+            </div>
+
+            <div
+                class="score-number score-o"
+                id="scoreO">
+                0
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- MENSAJE -->
+
+    <div
+        class="message"
+        id="message">
+        Turno de X
+    </div>
+
+
+    <!-- TABLERO -->
+
+    <div
+        class="board-wrapper"
+        id="boardWrapper">
+
+        <div
+            class="board"
+            id="board">
+
+            <button class="cell" data-index="0"></button>
+            <button class="cell" data-index="1"></button>
+            <button class="cell" data-index="2"></button>
+
+            <button class="cell" data-index="3"></button>
+            <button class="cell" data-index="4"></button>
+            <button class="cell" data-index="5"></button>
+
+            <button class="cell" data-index="6"></button>
+            <button class="cell" data-index="7"></button>
+            <button class="cell" data-index="8"></button>
+
+        </div>
+
+        <div
+            class="win-line"
+            id="winLine">
+        </div>
+
+    </div>
+
+
+    <!-- CONTROLES -->
+
+    <div class="controls">
+
+        <button
+            class="control-btn new-game"
+            id="newGame">
+            🔄 NUEVA PARTIDA
+        </button>
+
+        <button
+            class="control-btn"
+            id="resetScore">
+            🗑️ REINICIAR MARCADOR
+        </button>
+
+    </div>
+
+
+    <!-- COLORES -->
+
+    <div class="theme-section">
+
+        <div class="theme-title">
+            🌈 CAMBIAR COLOR / TEMA
+        </div>
+
+        <div class="themes">
+
+            <button
+                class="theme theme-cyan active"
+                data-main="#00eaff"
+                data-second="#8a2be2">
+            </button>
+
+            <button
+                class="theme theme-purple"
+                data-main="#9b5cff"
+                data-second="#ff2bd6">
+            </button>
+
+            <button
+                class="theme theme-pink"
+                data-main="#ff2bd6"
+                data-second="#ff0055">
+            </button>
+
+            <button
+                class="theme theme-red"
+                data-main="#ff3158"
+                data-second="#ff0066">
+            </button>
+
+            <button
+                class="theme theme-orange"
+                data-main="#ff8a00"
+                data-second="#ff3158">
+            </button>
+
+            <button
+                class="theme theme-yellow"
+                data-main="#ffe600"
+                data-second="#ff8a00">
+            </button>
+
+            <button
+                class="theme theme-green"
+                data-main="#00ff88"
+                data-second="#00eaff">
+            </button>
+
+            <button
+                class="theme theme-lime"
+                data-main="#b6ff00"
+                data-second="#00ff88">
+            </button>
+
+            <button
+                class="theme theme-blue"
+                data-main="#287cff"
+                data-second="#00eaff">
+            </button>
+
+            <button
+                class="theme theme-ice"
+                data-main="#8fffff"
+                data-second="#287cff">
+            </button>
+
+            <button
+                class="theme theme-white"
+                data-main="#ffffff"
+                data-second="#9b5cff">
+            </button>
+
+            <button
+                class="theme theme-gold"
+                data-main="#ffd84d"
+                data-second="#ff8a00">
+            </button>
+
+            <button
+                class="theme theme-violet"
+                data-main="#7000ff"
+                data-second="#ff00cc">
+            </button>
+
+            <button
+                class="theme theme-magenta"
+                data-main="#ff0099"
+                data-second="#7000ff">
+            </button>
+
+            <button
+                class="theme theme-turquoise"
+                data-main="#00ffd5"
+                data-second="#00eaff">
+            </button>
+
+            <button
+                class="theme theme-rainbow"
+                data-main="#00eaff"
+                data-second="#ff2bd6">
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- CREADOR -->
+
+    <div class="creator">
+
+        <div class="creator-small">
+            ESTA APLICACIÓN FUE CREADA POR
+        </div>
+
+        <div class="creator-name">
+            MOUAD QATIB
+        </div>
+
+    </div>
+
+</div>
+
+
+<footer>
+    XO MD5 QAT • PLAY • WIN • BECOME THE KING
+</footer>
+
+</div>
+
+
+<script>
+
+/* =====================================================
+   VARIABLES
+===================================================== */
+
+const cells =
+    [...document.querySelectorAll(".cell")];
+
+const boardWrapper =
+    document.getElementById("boardWrapper");
+
+const winLine =
+    document.getElementById("winLine");
+
+const message =
+    document.getElementById("message");
+
+const difficultyBox =
+    document.getElementById("difficultyBox");
+
+const twoPlayersBtn =
+    document.getElementById("twoPlayersBtn");
+
+const robotBtn =
+    document.getElementById("robotBtn");
+
+const xLabel =
+    document.getElementById("xLabel");
+
+const oLabel =
+    document.getElementById("oLabel");
+
+const scoreXElement =
+    document.getElementById("scoreX");
+
+const scoreOElement =
+    document.getElementById("scoreO");
+
+
+let board =
+    Array(9).fill("");
+
+let currentPlayer = "X";
+
+let gameMode = "player";
+
+let difficulty = "hard";
+
+let gameOver = false;
+
+let robotThinking = false;
+
+let scoreX = 0;
+
+let scoreO = 0;
+
+
+/* =====================================================
+   POSICIONES GANADORAS
+===================================================== */
+
+const winningCombos = [
+
+    [0,1,2],
+    [3,4,5],
+    [6,7,8],
+
+    [0,3,6],
+    [1,4,7],
+    [2,5,8],
+
+    [0,4,8],
+    [2,4,6]
+
+];
+
+
+/* =====================================================
+   VALIDACIÓN
+===================================================== */
+
+function isValidIndex(index){
+
+    return (
+        Number.isInteger(index) &&
+        index >= 0 &&
+        index < 9 &&
+        cells[index] !== undefined
+    );
+
+}
+
+
+function getEmptyCells(){
+
+    const result = [];
+
+    for(let i = 0; i < 9; i++){
+
+        if(
+            isValidIndex(i) &&
+            board[i] === ""
+        ){
+            result.push(i);
+        }
+
+    }
+
+    return result;
+}
+
+
+/* =====================================================
+   RENDER
+===================================================== */
+
+function renderBoard(){
+
+    cells.forEach((cell,index)=>{
+
+        cell.innerHTML = "";
+
+        cell.classList.remove(
+            "filled",
+            "x",
+            "o",
+            "winner"
+        );
+
+        if(
+            board[index] === "X" ||
+            board[index] === "O"
+        ){
+
+            cell.classList.add(
+                "filled",
+                board[index].toLowerCase()
+            );
+
+            const mark =
+                document.createElement("span");
+
+            mark.className = "mark";
+
+            mark.textContent =
+                board[index];
+
+            cell.appendChild(mark);
+
+        }
+
+    });
+
+}
+
+
+/* =====================================================
+   GANADOR
+===================================================== */
+
+function checkWinner(state = board){
+
+    for(const combo of winningCombos){
+
+        const [a,b,c] = combo;
+
+        if(
+            state[a] !== "" &&
+            state[a] === state[b] &&
+            state[a] === state[c]
+        ){
+
+            return {
+                player:state[a],
+                combo:combo
+            };
+
+        }
+
+    }
+
+    return null;
+}
+
+
+function isDraw(state = board){
+
+    return state.every(
+        cell => cell !== ""
+    );
+
+}
+
+
+/* =====================================================
+   DIBUJAR LÍNEA
+===================================================== */
+
+function drawWinLine(combo){
+
+    const first =
+        cells[combo[0]];
+
+    const last =
+        cells[combo[2]];
+
+    if(!first || !last) return;
+
+    const wrapperRect =
+        boardWrapper.getBoundingClientRect();
+
+    const firstRect =
+        first.getBoundingClientRect();
+
+    const lastRect =
+        last.getBoundingClientRect();
+
+    const x1 =
+        firstRect.left +
+        firstRect.width / 2 -
+        wrapperRect.left;
+
+    const y1 =
+        firstRect.top +
+        firstRect.height / 2 -
+        wrapperRect.top;
+
+    const x2 =
+        lastRect.left +
+        lastRect.width / 2 -
+        wrapperRect.left;
+
+    const y2 =
+        lastRect.top +
+        lastRect.height / 2 -
+        wrapperRect.top;
+
+    const dx = x2-x1;
+    const dy = y2-y1;
+
+    const length =
+        Math.sqrt(
+            dx*dx + dy*dy
+        );
+
+    const angle =
+        Math.atan2(dy,dx) *
+        180 /
+        Math.PI;
+
+    winLine.style.display =
+        "block";
+
+    winLine.style.width =
+        length + "px";
+
+    winLine.style.left =
+        x1 + "px";
+
+    winLine.style.top =
+        y1 + "px";
+
+    winLine.style.transform =
+        `rotate(${angle}deg)`;
+
+}
+
+
+/* =====================================================
+   FINAL
+===================================================== */
+
+function finishGame(result){
+
+    gameOver = true;
+
+    robotThinking = false;
+
+    message.classList.remove(
+        "robot-thinking"
+    );
+
+    if(result){
+
+        result.combo.forEach(index=>{
+
+            if(isValidIndex(index)){
+
+                cells[index]
+                    .classList
+                    .add("winner");
+
+            }
+
+        });
+
+        drawWinLine(result.combo);
+
+        if(result.player === "X"){
+
+            scoreX++;
+
+            scoreXElement.textContent =
+                scoreX;
+
+            message.innerHTML =
+                "👑 ¡HAS GANADO, X!<br>" +
+                "🏆 ERES EL CAMPEÓN";
+
+        }else{
+
+            scoreO++;
+
+            scoreOElement.textContent =
+                scoreO;
+
+            if(gameMode === "robot"){
+
+                message.innerHTML =
+                    "🤖 EL ROBOT HA GANADO<br>" +
+                    "⚡ INTÉNTALO OTRA VEZ";
+
+            }else{
+
+                message.innerHTML =
+                    "👑 ¡HA GANADO, O!<br>" +
+                    "🏆 PARTIDA INCREÍBLE";
+
+            }
+
+        }
+
+        return;
+    }
+
+    if(isDraw()){
+
+        message.innerHTML =
+            "🤝 ¡EMPATE!<br>" +
+            "⚡ PARTIDA PERFECTAMENTE DEFENDIDA";
+
+    }
+
+}
+
+
+/* =====================================================
+   MENSAJE DE TURNO
+===================================================== */
+
+function updateTurnMessage(){
+
+    if(gameOver) return;
+
+    message.classList.remove(
+        "robot-thinking"
+    );
+
+    if(gameMode === "robot"){
+
+        if(currentPlayer === "X"){
+
+            message.textContent =
+                "🎮 TU TURNO • X";
+
+        }else{
+
+            message.textContent =
+                "🤖 ROBOT • ANALIZANDO...";
+
+        }
+
+    }else{
+
+        message.textContent =
+            `Turno de ${currentPlayer}`;
+
+    }
+
+}
+
+
+/* =====================================================
+   JUGADA
+===================================================== */
+
+function makeMove(index){
+
+    if(gameOver) return false;
+
+    if(!isValidIndex(index)){
+
+        return false;
+
+    }
+
+    if(board[index] !== ""){
+
+        return false;
+
+    }
+
+    if(
+        gameMode === "robot" &&
+        currentPlayer !== "X"
+    ){
+
+        return false;
+
+    }
+
+    board[index] =
+        currentPlayer;
+
+    renderBoard();
+
+    const result =
+        checkWinner();
+
+    if(result){
+
+        finishGame(result);
+        return true;
+
+    }
+
+    if(isDraw()){
+
+        finishGame(null);
+        return true;
+
+    }
+
+    currentPlayer =
+        currentPlayer === "X"
+            ? "O"
+            : "X";
+
+    updateTurnMessage();
+
+    if(
+        gameMode === "robot" &&
+        currentPlayer === "O"
+    ){
+
+        robotMove();
+
+    }
+
+    return true;
+}
+
+
+/* =====================================================
+   EVENTOS
+===================================================== */
+
+cells.forEach((cell,index)=>{
+
+    cell.addEventListener(
+        "click",
+        ()=>{
+            makeMove(index);
+        }
+    );
+
+});
+
+
+/* =====================================================
+   FÁCIL
+===================================================== */
+
+function easyRobot(){
+
+    const empty =
+        getEmptyCells();
+
+    if(!empty.length)
+        return null;
+
+    return empty[
+        Math.floor(
+            Math.random() * empty.length
+        )
+    ];
+
+}
+
+
+/* =====================================================
+   GANAR / BLOQUEAR
+===================================================== */
+
+function findWinningMove(
+    state,
+    player
+){
+
+    for(let i=0;i<9;i++){
+
+        if(state[i] !== "")
+            continue;
+
+        const test =
+            [...state];
+
+        test[i] = player;
+
+        const result =
+            checkWinner(test);
+
+        if(
+            result &&
+            result.player === player
+        ){
+
+            return i;
+
+        }
+
+    }
+
+    return null;
+
+}
+
+
+/* =====================================================
+   MEDIANO
+===================================================== */
+
+function mediumRobot(){
+
+    const empty =
+        getEmptyCells();
+
+    if(!empty.length)
+        return null;
+
+
+    /* GANAR */
+
+    const win =
+        findWinningMove(
+            board,
+            "O"
+        );
+
+    if(win !== null){
+
+        if(Math.random() < .85)
+            return win;
+
+    }
+
+
+    /* BLOQUEAR */
+
+    const block =
+        findWinningMove(
+            board,
+            "X"
+        );
+
+    if(block !== null){
+
+        if(Math.random() < .8)
+            return block;
+
+    }
+
+
+    /* CENTRO */
+
+    if(
+        board[4] === "" &&
+        Math.random() < .75
+    ){
+
+        return 4;
+
+    }
+
+
+    /* ESQUINAS */
+
+    const corners =
+        [0,2,6,8]
+        .filter(
+            i => board[i] === ""
+        );
+
+    if(
+        corners.length &&
+        Math.random() < .75
+    ){
+
+        return corners[
+            Math.floor(
+                Math.random() *
+                corners.length
+            )
+        ];
+
+    }
+
+
+    return empty[
+        Math.floor(
+            Math.random() *
+            empty.length
+        )
+    ];
+
+}
+
+
+/* =====================================================
+   MINIMAX MUY FUERTE
+===================================================== */
+
+/*
+   El robot difícil NO comete errores aleatorios.
+
+   Esta versión analiza todas las continuaciones
+   posibles hasta el final.
+
+   O = maximiza
+   X = minimiza
+
+   Esto significa que el robot busca siempre
+   la continuación matemáticamente más segura.
+*/
+
+function minimax(
+    state,
+    depth,
+    maximizing
+){
+
+    const result =
+        checkWinner(state);
+
+    if(result){
+
+        if(result.player === "O"){
+
+            return 100 - depth;
+
+        }
+
+        if(result.player === "X"){
+
+            return depth - 100;
+
+        }
+
+    }
+
+    if(
+        state.every(
+            cell => cell !== ""
+        )
+    ){
+
+        return 0;
+
+    }
+
+
+    if(maximizing){
+
+        let best = -Infinity;
+
+        for(let i=0;i<9;i++){
+
+            if(state[i] !== "")
+                continue;
+
+            state[i] = "O";
+
+            const score =
+                minimax(
+                    state,
+                    depth + 1,
+                    false
+                );
+
+            state[i] = "";
+
+            best =
+                Math.max(
+                    best,
+                    score
+                );
+
+        }
+
+        return best;
+
+    }
+
+
+    let best = Infinity;
+
+    for(let i=0;i<9;i++){
+
+        if(state[i] !== "")
+            continue;
+
+        state[i] = "X";
+
+        const score =
+            minimax(
+                state,
+                depth + 1,
+                true
+            );
+
+        state[i] = "";
+
+        best =
+            Math.min(
+                best,
+                score
+            );
+
+    }
+
+    return best;
+
+}
+
+
+/* =====================================================
+   MEJOR JUGADA
+===================================================== */
+
+function hardRobot(){
+
+    const empty =
+        getEmptyCells();
+
+    if(!empty.length)
+        return null;
+
+
+    /*
+       PRIMERA PRIORIDAD:
+       ganar inmediatamente.
+    */
+
+    const win =
+        findWinningMove(
+            board,
+            "O"
+        );
+
+    if(win !== null)
+        return win;
+
+
+    /*
+       SEGUNDA PRIORIDAD:
+       bloquear una victoria inmediata.
+    */
+
+    const block =
+        findWinningMove(
+            board,
+            "X"
+        );
+
+    if(block !== null)
+        return block;
+
+
+    /*
+       Ahora analizamos TODAS las jugadas
+       posibles mediante minimax.
+    */
+
+    let bestScore =
+        -Infinity;
+
+    let bestMoves = [];
+
+
+    for(const index of empty){
+
+        if(!isValidIndex(index))
+            continue;
+
+        const testBoard =
+            [...board];
+
+        testBoard[index] =
+            "O";
+
+        const score =
+            minimax(
+                testBoard,
+                0,
+                false
+            );
+
+
+        /*
+           Guardamos todas las jugadas
+           que tienen exactamente la mejor
+           puntuación.
+
+           Así el robot no hace siempre
+           exactamente la misma partida.
+        */
+
+        if(score > bestScore){
+
+            bestScore = score;
+
+            bestMoves = [
+                index
+            ];
+
+        }else if(score === bestScore){
+
+            bestMoves.push(index);
+
+        }
+
+    }
+
+
+    if(bestMoves.length){
+
+        return bestMoves[
+            Math.floor(
+                Math.random() *
+                bestMoves.length
+            )
+        ];
+
+    }
+
+
+    return empty[0];
+
+}
+
+
+/* =====================================================
+   ROBOT
+===================================================== */
+
+function robotMove(){
+
+    if(
+        gameOver ||
+        gameMode !== "robot" ||
+        currentPlayer !== "O"
+    ){
+
+        return;
+
+    }
+
+    robotThinking = true;
+
+    message.classList.add(
+        "robot-thinking"
+    );
+
+    message.textContent =
+        "🤖 ROBOT • ANALIZANDO TODAS LAS JUGADAS...";
+
+
+    const delay =
+        difficulty === "easy"
+            ? 350
+            : difficulty === "medium"
+                ? 600
+                : 900;
+
+
+    setTimeout(()=>{
+
+        if(gameOver){
+
+            robotThinking = false;
+            return;
+
+        }
+
+
+        let index;
+
+
+        if(difficulty === "easy"){
+
+            index =
+                easyRobot();
+
+        }else if(
+            difficulty === "medium"
+        ){
+
+            index =
+                mediumRobot();
+
+        }else{
+
+            index =
+                hardRobot();
+
+        }
+
+
+        /*
+           SEGURIDAD ABSOLUTA:
+           el robot solo puede poner O
+           en una de las 9 casillas.
+        */
+
+        if(
+            !isValidIndex(index) ||
+            board[index] !== ""
+        ){
+
+            const valid =
+                getEmptyCells();
+
+            if(!valid.length){
+
+                robotThinking = false;
+                return;
+
+            }
+
+            index =
+                valid[0];
+
+        }
+
+
+        board[index] =
+            "O";
+
+
+        renderBoard();
+
+
+        robotThinking = false;
+
+
+        const result =
+            checkWinner();
+
+
+        if(result){
+
+            finishGame(result);
+            return;
+
+        }
+
+
+        if(isDraw()){
+
+            finishGame(null);
+            return;
+
+        }
+
+
+        currentPlayer =
+            "X";
+
+        updateTurnMessage();
+
+
+    },delay);
+
+}
+
+
+/* =====================================================
+   MODO DOS JUGADORES
+===================================================== */
+
+twoPlayersBtn.addEventListener(
+    "click",
+    ()=>{
+
+        gameMode =
+            "player";
+
+        twoPlayersBtn
+            .classList
+            .add("active");
+
+        robotBtn
+            .classList
+            .remove("active");
+
+        difficultyBox
+            .classList
+            .remove("show");
+
+        xLabel.textContent =
+            "JUGADOR X";
+
+        oLabel.textContent =
+            "JUGADOR O";
+
+        newGame();
+
+    }
+);
+
+
+/* =====================================================
+   MODO ROBOT
+===================================================== */
+
+robotBtn.addEventListener(
+    "click",
+    ()=>{
+
+        gameMode =
+            "robot";
+
+        robotBtn
+            .classList
+            .add("active");
+
+        twoPlayersBtn
+            .classList
+            .remove("active");
+
+        difficultyBox
+            .classList
+            .add("show");
+
+        xLabel.textContent =
+            "TÚ • X";
+
+        oLabel.textContent =
+            "ROBOT • O";
+
+        newGame();
+
+    }
+);
+
+
+/* =====================================================
+   DIFICULTADES
+===================================================== */
+
+document
+.querySelectorAll(".diff")
+.forEach(button=>{
+
+    button.addEventListener(
+        "click",
+        ()=>{
+
+            document
+            .querySelectorAll(".diff")
+            .forEach(btn =>
+                btn.classList.remove(
+                    "active"
+                )
+            );
+
+            button.classList.add(
+                "active"
+            );
+
+            difficulty =
+                button.dataset.difficulty;
+
+            newGame();
+
+        }
+    );
+
+});
+
+
+/* =====================================================
+   NUEVA PARTIDA
+===================================================== */
+
+function newGame(){
+
+    board =
+        Array(9).fill("");
+
+    currentPlayer =
+        "X";
+
+    gameOver =
+        false;
+
+    robotThinking =
+        false;
+
+    winLine.style.display =
+        "none";
+
+    winLine.style.width =
+        "0";
+
+    message.classList.remove(
+        "robot-thinking"
+    );
+
+    renderBoard();
+
+    updateTurnMessage();
+
+}
+
+
+/* =====================================================
+   BOTÓN NUEVA PARTIDA
+===================================================== */
+
+document
+.getElementById("newGame")
+.addEventListener(
+    "click",
+    newGame
+);
+
+
+/* =====================================================
+   REINICIAR MARCADOR
+===================================================== */
+
+document
+.getElementById("resetScore")
+.addEventListener(
+    "click",
+    ()=>{
+
+        scoreX = 0;
+        scoreO = 0;
+
+        scoreXElement.textContent =
+            "0";
+
+        scoreOElement.textContent =
+            "0";
+
+        newGame();
+
+    }
+);
+
+
+/* =====================================================
+   CAMBIO DE COLORES
+===================================================== */
+
+document
+.querySelectorAll(".theme")
+.forEach(theme=>{
+
+    theme.addEventListener(
+        "click",
+        ()=>{
+
+            document.documentElement
+                .style
+                .setProperty(
+                    "--main",
+                    theme.dataset.main
+                );
+
+            document.documentElement
+                .style
+                .setProperty(
+                    "--second",
+                    theme.dataset.second
+                );
+
+            document
+                .querySelectorAll(".theme")
+                .forEach(t =>
+                    t.classList.remove(
+                        "active"
+                    )
+                );
+
+            theme.classList.add(
+                "active"
+            );
+
+        }
+    );
+
+});
+
+
+/* =====================================================
+   INICIO
+===================================================== */
+
+renderBoard();
+updateTurnMessage();
+
+</script>
+
+</body>
+</html>
