@@ -2818,3 +2818,166 @@ robotBtn.addEventListener(
 
         xLabel.textContent =
             "TÚ • X";
+
+/* =====================================================
+   FINALIZACIÓN Y ARRANQUE SEGURO
+   ===================================================== */
+
+        oLabel.textContent = "ROBOT • O";
+
+        newGame();
+    }
+);
+
+/* DIFICULTADES */
+document.querySelectorAll(".diff").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+        document.querySelectorAll(".diff").forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        difficulty = btn.dataset.difficulty || "hard";
+        newGame();
+    });
+});
+
+/* NUEVA PARTIDA */
+function newGame(){
+    board = Array(9).fill("");
+    currentPlayer = "X";
+    gameOver = false;
+    robotThinking = false;
+
+    clearTimeout(window.__xoRobotTimer);
+    winLine.style.display = "none";
+    winLine.style.width = "0px";
+    message.classList.remove("robot-thinking");
+
+    renderBoard();
+    updateTurnMessage();
+
+    if(gameMode === "robot"){
+        xLabel.textContent = "TÚ • X";
+        oLabel.textContent = "ROBOT • O";
+    }else{
+        xLabel.textContent = "JUGADOR X";
+        oLabel.textContent = "JUGADOR O";
+    }
+}
+
+document.getElementById("newGame").addEventListener("click",newGame);
+
+/* REINICIAR MARCADOR */
+document.getElementById("resetScore").addEventListener("click",()=>{
+    scoreX = 0;
+    scoreO = 0;
+    scoreXElement.textContent = "0";
+    scoreOElement.textContent = "0";
+    newGame();
+});
+
+/* PANEL DE COLORES */
+const colorToggle = document.getElementById("colorToggle");
+const themePanel = document.getElementById("themePanel");
+
+colorToggle.addEventListener("click",()=>{
+    const open = themePanel.classList.toggle("show");
+    colorToggle.textContent = open ? "🎨 CERRAR COLORES" : "🌈 CAMBIAR COLORES";
+});
+
+document.querySelectorAll(".theme").forEach(theme=>{
+    theme.addEventListener("click",()=>{
+        document.documentElement.style.setProperty("--main",theme.dataset.main);
+        document.documentElement.style.setProperty("--second",theme.dataset.second);
+
+        document.querySelectorAll(".theme").forEach(t=>t.classList.remove("active"));
+        theme.classList.add("active");
+
+        /* Mantener X/O distintos */
+        document.documentElement.style.setProperty("--x-color",theme.dataset.main);
+        document.documentElement.style.setProperty("--o-color",theme.dataset.second);
+    });
+});
+
+/* CENTRO DE MÚSICA */
+function updateMusicPanel(){
+    const now = document.getElementById("musicNow");
+    const btn = document.getElementById("musicPlayBtn");
+    if(now && typeof window.getCurrentMusicName === "function"){
+        now.textContent = "🎵 " + window.getCurrentMusicName();
+    }
+    if(btn){
+        btn.textContent = typeof window.isMusicPlaying === "function" && window.isMusicPlaying()
+            ? "⏸ PAUSAR"
+            : "▶️ PLAY";
+    }
+}
+
+function toggleMusicPanel(){
+    if(typeof window.isMusicPlaying === "function" && window.isMusicPlaying()){
+        window.stopBackgroundMusic();
+    }else if(typeof window.startBackgroundMusic === "function"){
+        window.startBackgroundMusic();
+    }
+    updateMusicPanel();
+}
+
+function updateSoundButton(){
+    const btn = document.getElementById("soundToggle");
+    if(!btn) return;
+    const on = !!window.gameSoundEnabled;
+    btn.textContent = on ? "🔊 SONIDO: ACTIVADO" : "🔇 SONIDO: DESACTIVADO";
+    btn.classList.toggle("sound-on",on);
+}
+
+function showMusicNotice(text){
+    const notice = document.getElementById("musicNotice");
+    if(!notice) return;
+    notice.textContent = text;
+    notice.classList.add("show");
+    clearTimeout(window.__xoNoticeTimer);
+    window.__xoNoticeTimer = setTimeout(()=>notice.classList.remove("show"),1800);
+}
+
+/* PANTALLA DE INICIO
+   Este listener queda al final del documento para garantizar
+   que el botón exista y que todo el juego esté inicializado. */
+const splashScreen = document.getElementById("splashScreen");
+const startGameBtn = document.getElementById("startGameBtn");
+
+function openGame(){
+    if(splashScreen){
+        splashScreen.style.display = "none";
+        splashScreen.setAttribute("aria-hidden","true");
+    }
+
+    try{
+        if(typeof window.startBackgroundMusic === "function"){
+            window.startBackgroundMusic();
+        }
+        if(typeof window.updateMusicPanel === "function"){
+            window.updateMusicPanel();
+        }
+    }catch(e){
+        console.warn("Audio no disponible:",e);
+    }
+
+    newGame();
+}
+
+if(startGameBtn){
+    startGameBtn.addEventListener("click",openGame);
+    startGameBtn.addEventListener("touchend",e=>{
+        e.preventDefault();
+        openGame();
+    },{passive:false});
+}
+
+/* Estado inicial */
+updateSoundButton();
+updateMusicPanel();
+renderBoard();
+updateTurnMessage();
+
+
+</script>
+</body>
+</html>
