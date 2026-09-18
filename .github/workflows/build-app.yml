@@ -2,7 +2,8 @@ name: XO MD5 QATIB - App
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -23,15 +24,7 @@ jobs:
           set -e
           mkdir -p dist
           cp "preview (1).html" "dist/index.html"
-
-          cat > "dist/README.txt" <<'EOF'
-XO MD5 QATIB
-Aplicación web de Tres en Raya / X-O.
-
-Para usarla:
-1. Abre index.html en un navegador.
-2. No necesita instalación ni servidor.
-EOF
+          printf '%s\n' "XO MD5 QATIB" "Aplicación web de Tres en Raya / X-O." "" "Abre index.html en un navegador." > "dist/README.txt"
 
       - name: Crear ZIP descargable
         shell: bash
