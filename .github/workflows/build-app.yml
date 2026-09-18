@@ -1,0 +1,49 @@
+name: XO MD5 QATIB - App
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: Empaquetar aplicación
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Preparar aplicación
+        shell: bash
+        run: |
+          set -e
+          mkdir -p dist
+          cp "preview (1).html" "dist/index.html"
+
+          cat > "dist/README.txt" <<'EOF'
+XO MD5 QATIB
+Aplicación web de Tres en Raya / X-O.
+
+Para usarla:
+1. Abre index.html en un navegador.
+2. No necesita instalación ni servidor.
+EOF
+
+      - name: Crear ZIP descargable
+        shell: bash
+        run: |
+          set -e
+          cd dist
+          zip -r "../XO-MD5-QATIB.zip" .
+
+      - name: Subir aplicación como Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: XO-MD5-QATIB
+          path: XO-MD5-QATIB.zip
+          if-no-files-found: error
+          retention-days: 90
